@@ -21,7 +21,7 @@ const style = {
     padding: 4,
 };
 
-const AddBill = ({ openBillModal, setOpenBillModal, setOpenPopup }) => {
+const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
     const [formData, setFormData] = useState({});
     const { currentBills, setCurrentBills } = useThisContext()
     const [loading, setLoading] = useState(false)
@@ -36,39 +36,83 @@ const AddBill = ({ openBillModal, setOpenBillModal, setOpenPopup }) => {
         e.preventDefault();
         console.log(formData);
         let data = currentBills;
-        setCurrentBills([formData, ...data])
-        axios.post('http://localhost:5000/api/add-billing', formData)
-            .then(res => {
-                if (res.data) {
-                    setOpenBillModal(false)
-                    setLoading(false);
-                    console.log(res.data);
+        if (billModal.data) {
+            setCurrentBills([{ ...formData, _id: billModal.data._id }, ...data.filter(bill => bill._id !== billModal.data._id)])
+            axios.put(`http://localhost:5000/api/update-billing/${billModal.data._id}`, formData)
+                .then(res => {
+                    if (res.data) {
+                        setBillModal({
+                            open: false,
+                            data: null
+                        })
+                        setLoading(false);
+                        console.log(res.data);
+                        setOpenPopup({
+                            status: true,
+                            severity: 'success',
+                            message: 'Bill updated successfully'
+                        })
+                    }
+                })
+                .catch(err => {
                     setOpenPopup({
                         status: true,
-                        severity: 'success',
-                        message: 'Bill added successfully'
+                        severity: 'error',
+                        message: err.message
                     })
-                    setCurrentBills([{ ...formData, _id: res.data.insertedId }, ...data])
-                }
-            })
-            .catch(err => {
-                setOpenPopup({
-                    status: true,
-                    severity: 'error',
-                    message: err.message
+                    setBillModal({
+                        open: false,
+                        data: null
+                    })
+                    setLoading(false)
+                    setCurrentBills([...data])
                 })
-                setOpenBillModal(false)
-                setLoading(false)
-                setCurrentBills([...data])
-            })
+
+        } else {
+            setCurrentBills([formData, ...data])
+            axios.post('http://localhost:5000/api/add-billing', formData)
+                .then(res => {
+                    if (res.data) {
+                        setBillModal({
+                            open: false,
+                            data: null
+                        })
+                        setLoading(false);
+                        console.log(res.data);
+                        setOpenPopup({
+                            status: true,
+                            severity: 'success',
+                            message: 'Bill added successfully'
+                        })
+                        setCurrentBills([{ ...formData, _id: res.data.insertedId }, ...data])
+                    }
+                })
+                .catch(err => {
+                    setOpenPopup({
+                        status: true,
+                        severity: 'error',
+                        message: err.message
+                    })
+                    setBillModal({
+                        open: false,
+                        data: null
+                    })
+                    setLoading(false)
+                    setCurrentBills([...data])
+                })
+        }
+
     }
 
     return (
         <Modal
             aria-labelledby="transition-modal-title"
             aria-describedby="transition-modal-description"
-            open={openBillModal}
-            onClose={() => setOpenBillModal(false)}
+            open={billModal.open}
+            onClose={() => setBillModal({
+                open: false,
+                data: null
+            })}
             closeAfterTransition
             BackdropComponent={Backdrop}
             BackdropProps={{
@@ -76,7 +120,7 @@ const AddBill = ({ openBillModal, setOpenBillModal, setOpenPopup }) => {
             }}
         >
 
-            <Fade in={openBillModal}>
+            <Fade in={billModal.open}>
                 <Box sx={style}>
                     {loading && <LinearProgress />}
                     <form onSubmit={handleSubmit}>
@@ -86,6 +130,7 @@ const AddBill = ({ openBillModal, setOpenBillModal, setOpenPopup }) => {
                             name="name"
                             label="Full Name"
                             margin="dense"
+                            defaultValue={billModal.data ? billModal.data.name : ''}
                             onChange={handleChange}
                             required
                         />
@@ -96,6 +141,7 @@ const AddBill = ({ openBillModal, setOpenBillModal, setOpenPopup }) => {
                             name="email"
                             label="Email"
                             margin="dense"
+                            defaultValue={billModal.data ? billModal.data.email : ''}
                             onChange={handleChange}
                             required
                         />
@@ -105,6 +151,7 @@ const AddBill = ({ openBillModal, setOpenBillModal, setOpenPopup }) => {
                             fullWidth
                             name="phone"
                             label="Phone"
+                            defaultValue={billModal.data ? billModal.data.phone : ''}
                             onChange={handleChange}
                             required
                         />
@@ -114,11 +161,12 @@ const AddBill = ({ openBillModal, setOpenBillModal, setOpenPopup }) => {
                             fullWidth
                             name="amount"
                             label="Paid Amount"
+                            defaultValue={billModal.data ? billModal.data.amount : ''}
                             onChange={handleChange}
                             required
                         />
 
-                        <Button variant="contained" type="submit" style={{ marginTop: 10 }}>Add</Button>
+                        <Button variant="contained" type="submit" style={{ marginTop: 10 }}>Save</Button>
                     </form>
                 </Box>
             </Fade>

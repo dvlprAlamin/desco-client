@@ -29,7 +29,10 @@ const StyledTableRow = styled(TableRow)({
 
 const DataTable = () => {
     const { currentBills, setCurrentBills } = useThisContext();
-    const [openBillModal, setOpenBillModal] = useState(false);
+    const [billModal, setBillModal] = useState({
+        open: false,
+        data: null
+    });
     const [openPopup, setOpenPopup] = useState(false)
     const [bills, setBills] = useState([]);
     // const [currentBills, setCurrentBills] = useState([])
@@ -51,7 +54,33 @@ const DataTable = () => {
                 setBills(res.data)
             })
     }, [])
-    console.log(bills);
+    const billsDeleteHandler = id => {
+        axios.delete(`http://localhost:5000/api/delete-billing/${id}`)
+            .then(res => {
+                if (res.data) {
+                    setCurrentBills(preValue => preValue.filter(item => item._id !== id))
+                    setOpenPopup({
+                        status: true,
+                        severity: 'success',
+                        message: 'Bill deleted successfully'
+                    })
+                }
+            })
+            .catch(err => {
+                setOpenPopup({
+                    status: true,
+                    severity: 'error',
+                    message: err.message
+                })
+            })
+    }
+
+    const billsUpdateHandler = data => {
+        setBillModal({
+            open: true,
+            data: data
+        })
+    }
     return (
         <Container>
             <Paper variant='outlined' sx={{ p: 1, my: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -65,12 +94,15 @@ const DataTable = () => {
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => setOpenBillModal(true)}
+                    onClick={() => setBillModal({
+                        open: true,
+                        data: null
+                    })}
                 >Add New Bill</Button>
                 <AddBill
                     setOpenPopup={setOpenPopup}
-                    openBillModal={openBillModal}
-                    setOpenBillModal={setOpenBillModal}
+                    billModal={billModal}
+                    setBillModal={setBillModal}
                 />
             </Paper>
             <Popup
@@ -102,8 +134,14 @@ const DataTable = () => {
                                 <TableCell align="center">{amount}</TableCell>
                                 <TableCell align="center">
                                     <ButtonGroup size='small' variant="contained">
-                                        <Button color="primary">Edit</Button>
-                                        <Button color="secondary">Delete</Button>
+                                        <Button
+                                            color="primary"
+                                            onClick={() => billsUpdateHandler({ _id, name, email, phone, amount })}
+                                        >Edit</Button>
+                                        <Button
+                                            color="secondary"
+                                            onClick={() => billsDeleteHandler(_id)}
+                                        >Delete</Button>
                                     </ButtonGroup>
                                 </TableCell>
                             </StyledTableRow>
