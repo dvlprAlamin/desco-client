@@ -5,13 +5,13 @@ import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import { TableContainer, Container } from '@mui/material';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Paper, TextField, Typography, ButtonGroup, Box, Button, Pagination } from '@mui/material';
+import { Paper, TextField, Typography, ButtonGroup, Box, Button, Pagination, CircularProgress } from '@mui/material';
 import { styled } from '@mui/styles';
-import AddBill from './AddBill';
+import AddBill from '../AddBill';
 import { useEffect } from 'react';
 import axios from 'axios';
-import Popup from './Popup';
-import { useThisContext } from '../context';
+import Popup from './../Popup';
+import { useThisContext } from '../../context';
 
 
 const StyledTableRow = styled(TableRow)({
@@ -28,11 +28,12 @@ const StyledTableRow = styled(TableRow)({
 });
 
 const DataTable = () => {
-    const { setBills, currentBills, setCurrentBills, pageCount, billPerPage } = useThisContext();
+    const { setBills, setPageCount, bills, currentBills, setCurrentBills, pageCount, billPerPage } = useThisContext();
     const [billModal, setBillModal] = useState({
         open: false,
         data: null
     });
+    // const [loading, setLoading] = useState(false)
     const [openPopup, setOpenPopup] = useState(false)
     // const [bills, setBills] = useState([]);
     // const [currentBills, setCurrentBills] = useState([])
@@ -50,16 +51,21 @@ const DataTable = () => {
     }, [currentPage])
 
     const billsDeleteHandler = id => {
+        let deletedBill = currentBills.find(bill => bill._id === id);
+        setCurrentBills(preValue => preValue.filter(bill => bill._id !== id))
+        setPageCount(Math.ceil((bills.length - 1) / billPerPage))
+        // setLoading(true)
         axios.delete(`http://localhost:5000/api/delete-billing/${id}`)
             .then(res => {
                 if (res.data) {
-                    setCurrentBills(preValue => preValue.filter(item => item._id !== id))
+                    // setCurrentBills(preValue => preValue.filter(bill => bill._id !== id))
                     setOpenPopup({
                         status: true,
                         severity: 'success',
                         message: 'Bill deleted successfully'
                     })
                 }
+                // setLoading(false)
             })
             .catch(err => {
                 setOpenPopup({
@@ -67,6 +73,9 @@ const DataTable = () => {
                     severity: 'error',
                     message: err.message
                 })
+                setCurrentBills(preValue => [deletedBill, ...preValue]);
+                setPageCount(Math.ceil(bills.length / billPerPage))
+                // setLoading(false)
             })
     }
 
