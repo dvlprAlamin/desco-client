@@ -1,4 +1,5 @@
-import { useContext, useState } from "react";
+import axios from "axios";
+import { useContext, useEffect, useState } from "react";
 import { createContext } from "react";
 
 
@@ -9,10 +10,24 @@ export const useThisContext = () => {
 }
 
 export const ContextProvider = ({ children }) => {
+    const [bills, setBills] = useState([]);
     const [currentBills, setCurrentBills] = useState([])
-
+    const billPerPage = 10;
+    const [pageCount, setPageCount] = useState(null)
+    useEffect(() => {
+        axios.get('http://localhost:5000/api/billing-list')
+            .then(res => {
+                setBills(res.data)
+            })
+    }, [])
+    useEffect(() => {
+        setPageCount(Math.ceil(bills.length / billPerPage))
+    }, [bills])
     const value = {
-        currentBills, setCurrentBills
+        currentBills, setCurrentBills,
+        bills, setBills,
+        pageCount, setPageCount,
+        billPerPage
     }
     return (
         <AllContext.Provider value={value}>

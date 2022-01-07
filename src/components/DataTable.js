@@ -28,16 +28,16 @@ const StyledTableRow = styled(TableRow)({
 });
 
 const DataTable = () => {
-    const { currentBills, setCurrentBills } = useThisContext();
+    const { setBills, currentBills, setCurrentBills, pageCount, billPerPage } = useThisContext();
     const [billModal, setBillModal] = useState({
         open: false,
         data: null
     });
     const [openPopup, setOpenPopup] = useState(false)
-    const [bills, setBills] = useState([]);
+    // const [bills, setBills] = useState([]);
     // const [currentBills, setCurrentBills] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
-    const billPerPage = 10;
+    // const billPerPage = 10;
     const handlePageChange = (event, value) => {
         setCurrentPage(value);
         // setPage(value)
@@ -48,12 +48,7 @@ const DataTable = () => {
                 setCurrentBills(res.data)
             })
     }, [currentPage])
-    useEffect(() => {
-        axios.get('http://localhost:5000/api/billing-list')
-            .then(res => {
-                setBills(res.data)
-            })
-    }, [])
+
     const billsDeleteHandler = id => {
         axios.delete(`http://localhost:5000/api/delete-billing/${id}`)
             .then(res => {
@@ -152,7 +147,7 @@ const DataTable = () => {
             <Pagination
                 sx={{ display: 'flex', justifyContent: 'center', my: 2 }}
                 color="primary"
-                count={Math.ceil(bills.length / billPerPage)}
+                count={pageCount}
                 page={currentPage}
                 onChange={handlePageChange}
             />

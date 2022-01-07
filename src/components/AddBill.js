@@ -23,7 +23,7 @@ const style = {
 
 const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
     const [formData, setFormData] = useState({});
-    const { currentBills, setCurrentBills } = useThisContext()
+    const { currentBills, setCurrentBills, setPageCount, billPerPage, bills } = useThisContext()
     const [loading, setLoading] = useState(false)
 
     const handleChange = e => {
@@ -70,8 +70,10 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
 
         } else {
             setCurrentBills([formData, ...data])
+            setPageCount(Math.ceil((bills.length + 1) / billPerPage))
             axios.post('http://localhost:5000/api/add-billing', formData)
                 .then(res => {
+                    console.log(res);
                     if (res.data) {
                         setBillModal({
                             open: false,
@@ -91,7 +93,7 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                     setOpenPopup({
                         status: true,
                         severity: 'error',
-                        message: err.message
+                        message: err.response?.data || err.message
                     })
                     setBillModal({
                         open: false,
@@ -99,6 +101,7 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                     })
                     setLoading(false)
                     setCurrentBills([...data])
+                    setPageCount(Math.ceil(bills.length / billPerPage))
                 })
         }
 
@@ -132,7 +135,7 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                             margin="dense"
                             defaultValue={billModal.data ? billModal.data.name : ''}
                             onChange={handleChange}
-                            required
+                        // required
                         />
 
                         <TextField
@@ -143,7 +146,7 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                             margin="dense"
                             defaultValue={billModal.data ? billModal.data.email : ''}
                             onChange={handleChange}
-                            required
+                        // required
                         />
                         <TextField
                             margin="dense"
@@ -153,7 +156,7 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                             label="Phone"
                             defaultValue={billModal.data ? billModal.data.phone : ''}
                             onChange={handleChange}
-                            required
+                        // required
                         />
                         <TextField
                             margin="dense"
@@ -163,7 +166,7 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                             label="Paid Amount"
                             defaultValue={billModal.data ? billModal.data.amount : ''}
                             onChange={handleChange}
-                            required
+                        // required
                         />
 
                         <Button variant="contained" type="submit" style={{ marginTop: 10 }}>Save</Button>
