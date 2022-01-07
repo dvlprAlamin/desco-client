@@ -6,7 +6,7 @@ import { Typography, Container } from '@mui/material';
 const Navigation = () => {
     return (
         <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="static">
+            <AppBar position="static" sx={{ bgcolor: '#4f51fe' }}>
                 <Toolbar>
                     <Container>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>

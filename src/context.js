@@ -10,6 +10,7 @@ export const useThisContext = () => {
 }
 
 export const ContextProvider = ({ children }) => {
+    const [openPopup, setOpenPopup] = useState(false)
     const [userEmail, setUserUserEmail] = useState('');
     const [bills, setBills] = useState([]);
     const [currentBills, setCurrentBills] = useState([]);
@@ -18,7 +19,7 @@ export const ContextProvider = ({ children }) => {
     const [pageCount, setPageCount] = useState(null)
     useEffect(() => {
         const AuthString = `Bearer ${localStorage.getItem('token')}`
-        axios.get('http://localhost:5000/api/billing-list', { 'headers': { 'Authorization': AuthString } })
+        axios.get('https://stormy-cliffs-96809.herokuapp.com/api/billing-list', { 'headers': { 'Authorization': AuthString } })
             .then(res => {
                 setBills(res.data)
             })
@@ -37,7 +38,8 @@ export const ContextProvider = ({ children }) => {
         setSearchedBills,
         billPerPage,
         userEmail,
-        setUserUserEmail
+        setUserUserEmail,
+        openPopup, setOpenPopup
     }
     return (
         <AllContext.Provider value={value}>

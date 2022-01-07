@@ -17,7 +17,7 @@ import TableSearch from './TableSearch';
 
 const StyledTableRow = styled(TableRow)({
     '& th,td': {
-        padding: '10px',
+        padding: '10px 15px',
     },
     '&:nth-of-type(odd)': {
         backgroundColor: '#eee',
@@ -27,15 +27,18 @@ const StyledTableRow = styled(TableRow)({
         border: 0,
     },
 });
-
+const HeadingCell = styled(TableCell)({
+    color: '#fff',
+    fontWeight: 600
+});
 const DataTable = () => {
-    const { setBills, setPageCount, bills, currentBills, setCurrentBills, pageCount, billPerPage, setSearchedBills, searchedBills } = useThisContext();
+    const { openPopup, setOpenPopup, setPageCount, bills, currentBills, setCurrentBills, pageCount, billPerPage, setSearchedBills, searchedBills } = useThisContext();
     const [billModal, setBillModal] = useState({
         open: false,
         data: null
     });
     // const [loading, setLoading] = useState(false)
-    const [openPopup, setOpenPopup] = useState(false)
+    // const [openPopup, setOpenPopup] = useState(false)
     // const [bills, setBills] = useState([]);
     // const [currentBills, setCurrentBills] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
@@ -46,7 +49,7 @@ const DataTable = () => {
     };
     useEffect(() => {
         const AuthString = `Bearer ${localStorage.getItem('token')}`
-        axios.get(`http://localhost:5000/api/billing-list?page=${currentPage - 1}&size=${billPerPage}`, { 'headers': { 'Authorization': AuthString } })
+        axios.get(`https://stormy-cliffs-96809.herokuapp.com/api/billing-list?page=${currentPage - 1}&size=${billPerPage}`, { 'headers': { 'Authorization': AuthString } })
             .then(res => {
                 setCurrentBills(res.data);
                 setSearchedBills(res.data);
@@ -58,7 +61,7 @@ const DataTable = () => {
         setSearchedBills(preValue => preValue.filter(bill => bill._id !== id))
         setPageCount(Math.ceil((bills.length - 1) / billPerPage))
         // setLoading(true)
-        axios.delete(`http://localhost:5000/api/delete-billing/${id}`)
+        axios.delete(`https://stormy-cliffs-96809.herokuapp.com/api/delete-billing/${id}`)
             .then(res => {
                 if (res.data) {
                     // setCurrentBills(preValue => preValue.filter(bill => bill._id !== id))
@@ -90,32 +93,6 @@ const DataTable = () => {
     }
     return (
         <Container>
-            {/* <Paper variant='outlined' sx={{ p: 1, my: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Typography sx={{ mx: 1 }}>Billing</Typography>
-                    <TextField
-                        size='small'
-                        label='Search'
-                    />
-                </Box>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => setBillModal({
-                        open: true,
-                        data: null
-                    })}
-                >Add New Bill</Button>
-                <AddBill
-                    setOpenPopup={setOpenPopup}
-                    billModal={billModal}
-                    setBillModal={setBillModal}
-                />
-            </Paper> */}
-            {/* <Popup
-                openPopup={openPopup}
-                setOpenPopup={setOpenPopup}
-            /> */}
             <TableSearch
                 setBillModal={setBillModal}
                 billModal={billModal}
@@ -125,13 +102,13 @@ const DataTable = () => {
             <TableContainer component={Paper} variant='outlined'>
                 <Table sx={{ minWidth: 700 }} aria-label="customized table">
                     <TableHead>
-                        <TableRow sx={{ background: 'cyan' }}>
-                            <TableCell>Billing ID</TableCell>
-                            <TableCell align="center">Full Name</TableCell>
-                            <TableCell align="center">Email</TableCell>
-                            <TableCell align="center">Phone</TableCell>
-                            <TableCell align="center">Paid Amount</TableCell>
-                            <TableCell align="center">Action</TableCell>
+                        <TableRow sx={{ background: '#4f51fe' }}>
+                            <HeadingCell>Billing ID</HeadingCell>
+                            <HeadingCell align="center">Full Name</HeadingCell>
+                            <HeadingCell align="center">Email</HeadingCell>
+                            <HeadingCell align="center">Phone</HeadingCell>
+                            <HeadingCell align="center">Paid Amount</HeadingCell>
+                            <HeadingCell align="center">Action</HeadingCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -146,7 +123,7 @@ const DataTable = () => {
                                 <TableCell align="center">{phone}</TableCell>
                                 <TableCell align="center">{amount}</TableCell>
                                 <TableCell align="center">
-                                    <ButtonGroup size='small' variant="outlined">
+                                    <ButtonGroup size='small' variant="contained">
                                         <Button
                                             color="primary"
                                             onClick={() => billsUpdateHandler({ _id, name, email, phone, amount })}
