@@ -7,11 +7,12 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { Paper, TextField, Typography, ButtonGroup, Box, Button, Pagination, CircularProgress } from '@mui/material';
 import { styled } from '@mui/styles';
-import AddBill from '../AddBill';
+import AddBill from './AddBill';
 import { useEffect } from 'react';
 import axios from 'axios';
 import Popup from './../Popup';
 import { useThisContext } from '../../context';
+import TableSearch from './TableSearch';
 
 
 const StyledTableRow = styled(TableRow)({
@@ -28,7 +29,7 @@ const StyledTableRow = styled(TableRow)({
 });
 
 const DataTable = () => {
-    const { setBills, setPageCount, bills, currentBills, setCurrentBills, pageCount, billPerPage } = useThisContext();
+    const { setBills, setPageCount, bills, currentBills, setCurrentBills, pageCount, billPerPage, setSearchedBills, searchedBills } = useThisContext();
     const [billModal, setBillModal] = useState({
         open: false,
         data: null
@@ -44,15 +45,17 @@ const DataTable = () => {
         // setPage(value)
     };
     useEffect(() => {
-        axios.get(`http://localhost:5000/api/billing-list?page=${currentPage - 1}&size=${billPerPage}`)
+        const AuthString = `Bearer ${localStorage.getItem('token')}`
+        axios.get(`http://localhost:5000/api/billing-list?page=${currentPage - 1}&size=${billPerPage}`, { 'headers': { 'Authorization': AuthString } })
             .then(res => {
-                setCurrentBills(res.data)
+                setCurrentBills(res.data);
+                setSearchedBills(res.data);
             })
     }, [currentPage])
 
     const billsDeleteHandler = id => {
         let deletedBill = currentBills.find(bill => bill._id === id);
-        setCurrentBills(preValue => preValue.filter(bill => bill._id !== id))
+        setSearchedBills(preValue => preValue.filter(bill => bill._id !== id))
         setPageCount(Math.ceil((bills.length - 1) / billPerPage))
         // setLoading(true)
         axios.delete(`http://localhost:5000/api/delete-billing/${id}`)
@@ -73,7 +76,7 @@ const DataTable = () => {
                     severity: 'error',
                     message: err.message
                 })
-                setCurrentBills(preValue => [deletedBill, ...preValue]);
+                setSearchedBills(preValue => [deletedBill, ...preValue]);
                 setPageCount(Math.ceil(bills.length / billPerPage))
                 // setLoading(false)
             })
@@ -87,7 +90,7 @@ const DataTable = () => {
     }
     return (
         <Container>
-            <Paper variant='outlined' sx={{ p: 1, my: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {/* <Paper variant='outlined' sx={{ p: 1, my: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <Typography sx={{ mx: 1 }}>Billing</Typography>
                     <TextField
@@ -108,10 +111,16 @@ const DataTable = () => {
                     billModal={billModal}
                     setBillModal={setBillModal}
                 />
-            </Paper>
-            <Popup
+            </Paper> */}
+            {/* <Popup
                 openPopup={openPopup}
                 setOpenPopup={setOpenPopup}
+            /> */}
+            <TableSearch
+                setBillModal={setBillModal}
+                billModal={billModal}
+                setOpenPopup={setOpenPopup}
+                openPopup={openPopup}
             />
             <TableContainer component={Paper} variant='outlined'>
                 <Table sx={{ minWidth: 700 }} aria-label="customized table">
@@ -126,7 +135,7 @@ const DataTable = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {currentBills.map(({ _id, name, email, phone, amount }) => (
+                        {searchedBills?.map(({ _id, name, email, phone, amount }) => (
                             <StyledTableRow key={_id}>
                                 <TableCell component="th" scope="row">
                                     {_id || 'Generating Id'}
@@ -137,7 +146,7 @@ const DataTable = () => {
                                 <TableCell align="center">{phone}</TableCell>
                                 <TableCell align="center">{amount}</TableCell>
                                 <TableCell align="center">
-                                    <ButtonGroup size='small' variant="contained">
+                                    <ButtonGroup size='small' variant="outlined">
                                         <Button
                                             color="primary"
                                             onClick={() => billsUpdateHandler({ _id, name, email, phone, amount })}

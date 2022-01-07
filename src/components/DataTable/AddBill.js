@@ -3,9 +3,9 @@ import Backdrop from '@mui/material/Backdrop';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
-import { Grid, LinearProgress, Button, TextField } from '@mui/material';
+import { LinearProgress, Button, TextField } from '@mui/material';
 import axios from 'axios';
-import { useThisContext } from '../context';
+import { useThisContext } from '../../context';
 
 const style = {
     position: 'absolute',
@@ -23,7 +23,7 @@ const style = {
 
 const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
     const [formData, setFormData] = useState({});
-    const { currentBills, setCurrentBills, setPageCount, billPerPage, bills } = useThisContext()
+    const { currentBills, setCurrentBills, setSearchedBills, setPageCount, billPerPage, bills } = useThisContext()
     const [loading, setLoading] = useState(false)
 
     const handleChange = e => {
@@ -37,7 +37,7 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
         console.log(formData);
         let data = currentBills;
         if (billModal.data) {
-            setCurrentBills([{ ...formData, _id: billModal.data._id }, ...data.filter(bill => bill._id !== billModal.data._id)])
+            setSearchedBills([{ ...formData, _id: billModal.data._id }, ...data.filter(bill => bill._id !== billModal.data._id)])
             axios.put(`http://localhost:5000/api/update-billing/${billModal.data._id}`, formData)
                 .then(res => {
                     if (res.data) {
@@ -46,7 +46,6 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                             data: null
                         })
                         setLoading(false);
-                        console.log(res.data);
                         setOpenPopup({
                             status: true,
                             severity: 'success',
@@ -58,18 +57,18 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                     setOpenPopup({
                         status: true,
                         severity: 'error',
-                        message: err.message
+                        message: err.response?.data || err.message
                     })
                     setBillModal({
                         open: false,
                         data: null
                     })
                     setLoading(false)
-                    setCurrentBills([...data])
+                    setSearchedBills([...data])
                 })
 
         } else {
-            setCurrentBills([formData, ...data])
+            setSearchedBills([formData, ...data])
             setPageCount(Math.ceil((bills.length + 1) / billPerPage))
             axios.post('http://localhost:5000/api/add-billing', formData)
                 .then(res => {
@@ -86,7 +85,7 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                             severity: 'success',
                             message: 'Bill added successfully'
                         })
-                        setCurrentBills([{ ...formData, _id: res.data.insertedId }, ...data])
+                        setSearchedBills([{ ...formData, _id: res.data.insertedId }, ...data])
                     }
                 })
                 .catch(err => {
@@ -100,7 +99,7 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                         data: null
                     })
                     setLoading(false)
-                    setCurrentBills([...data])
+                    setSearchedBills([...data])
                     setPageCount(Math.ceil(bills.length / billPerPage))
                 })
         }

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useThisContext } from '../../context';
 
 const BillsAction = ({ billsUpdateHandler, bill }) => {
-    const { setCurrentBills } = useThisContext()
+    const { setCurrentBills, } = useThisContext()
     const [loading, setLoading] = useState(false)
     const billsDeleteHandler = id => {
         setLoading(true)

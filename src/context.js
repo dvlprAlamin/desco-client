@@ -10,12 +10,15 @@ export const useThisContext = () => {
 }
 
 export const ContextProvider = ({ children }) => {
+    const [userEmail, setUserUserEmail] = useState('');
     const [bills, setBills] = useState([]);
-    const [currentBills, setCurrentBills] = useState([])
+    const [currentBills, setCurrentBills] = useState([]);
+    const [searchedBills, setSearchedBills] = useState([])
     const billPerPage = 10;
     const [pageCount, setPageCount] = useState(null)
     useEffect(() => {
-        axios.get('http://localhost:5000/api/billing-list')
+        const AuthString = `Bearer ${localStorage.getItem('token')}`
+        axios.get('http://localhost:5000/api/billing-list', { 'headers': { 'Authorization': AuthString } })
             .then(res => {
                 setBills(res.data)
             })
@@ -24,10 +27,17 @@ export const ContextProvider = ({ children }) => {
         setPageCount(Math.ceil(bills.length / billPerPage))
     }, [bills])
     const value = {
-        currentBills, setCurrentBills,
-        bills, setBills,
-        pageCount, setPageCount,
-        billPerPage
+        currentBills,
+        setCurrentBills,
+        bills,
+        setBills,
+        pageCount,
+        setPageCount,
+        searchedBills,
+        setSearchedBills,
+        billPerPage,
+        userEmail,
+        setUserUserEmail
     }
     return (
         <AllContext.Provider value={value}>
