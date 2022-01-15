@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import TableCell from '@mui/material/TableCell';
 import { TableContainer, Container } from '@mui/material';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Paper, TextField, Typography, ButtonGroup, Box, Button, Pagination, CircularProgress } from '@mui/material';
+import { Paper, ButtonGroup, Button, Pagination } from '@mui/material';
 import { styled } from '@mui/styles';
 import AddBill from './AddBill';
 import { useEffect } from 'react';
@@ -32,7 +32,7 @@ const HeadingCell = styled(TableCell)({
     fontWeight: 600
 });
 const DataTable = () => {
-    const { openPopup, setOpenPopup, setPageCount, bills, currentBills, setCurrentBills, pageCount, billPerPage, setSearchedBills, searchedBills } = useThisContext();
+    const { billPerPage, pageCount, setPageCount, billCount, setBillCount, openPopup, setOpenPopup, currentBills, setCurrentBills, setSearchedBills, searchedBills } = useThisContext();
     const [billModal, setBillModal] = useState({
         open: false,
         data: null
@@ -43,23 +43,27 @@ const DataTable = () => {
     // const [currentBills, setCurrentBills] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
     // const billPerPage = 10;
+    // const [pageCount, setPageCount] = useState(0);
+    // const [billCount, setBillCount] = useState(0)
     const handlePageChange = (event, value) => {
         setCurrentPage(value);
         // setPage(value)
     };
     useEffect(() => {
         const AuthString = `Bearer ${localStorage.getItem('token')}`
-        axios.get(`https://stormy-cliffs-96809.herokuapp.com/api/billing-list?page=${currentPage - 1}&size=${billPerPage}`, { 'headers': { 'Authorization': AuthString } })
+        axios.get(`http://localhost:5000/api/billing-list?page=${currentPage - 1}&size=${billPerPage}`, { 'headers': { 'Authorization': AuthString } })
             .then(res => {
-                setCurrentBills(res.data);
-                setSearchedBills(res.data);
+                setCurrentBills(res.data?.bills);
+                setSearchedBills(res.data?.bills);
+                setPageCount(Math.ceil(res.data?.count / billPerPage))
+                setBillCount(res.data?.count)
             })
     }, [currentPage])
-
+    console.log(billCount);
     const billsDeleteHandler = id => {
         let deletedBill = currentBills.find(bill => bill._id === id);
         setSearchedBills(preValue => preValue.filter(bill => bill._id !== id))
-        setPageCount(Math.ceil((bills.length - 1) / billPerPage))
+        setPageCount(Math.ceil((billCount - 1) / billPerPage))
         // setLoading(true)
         axios.delete(`https://stormy-cliffs-96809.herokuapp.com/api/delete-billing/${id}`)
             .then(res => {
@@ -80,7 +84,7 @@ const DataTable = () => {
                     message: err.message
                 })
                 setSearchedBills(preValue => [deletedBill, ...preValue]);
-                setPageCount(Math.ceil(bills.length / billPerPage))
+                setPageCount(Math.ceil(billCount / billPerPage))
                 // setLoading(false)
             })
     }

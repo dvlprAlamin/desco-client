@@ -23,7 +23,7 @@ const style = {
 
 const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
     const [formData, setFormData] = useState({});
-    const { currentBills, setCurrentBills, setSearchedBills, setPageCount, billPerPage, bills } = useThisContext()
+    const { currentBills, billCount, setCurrentBills, setSearchedBills, setPageCount, billPerPage } = useThisContext()
     const [loading, setLoading] = useState(false)
 
     const handleChange = e => {
@@ -69,8 +69,8 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
 
         } else {
             setSearchedBills([formData, ...data])
-            setPageCount(Math.ceil((bills.length + 1) / billPerPage))
-            axios.post('https://stormy-cliffs-96809.herokuapp.com/api/add-billing', formData)
+            setPageCount(Math.ceil((billCount + 1) / billPerPage))
+            axios.post('http://localhost:5000/api/add-billing', formData)
                 .then(res => {
                     console.log(res);
                     if (res.data) {
@@ -100,7 +100,7 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                     })
                     setLoading(false)
                     setSearchedBills([...data])
-                    setPageCount(Math.ceil(bills.length / billPerPage))
+                    setPageCount(Math.ceil((billCount - 1) / billPerPage))
                 })
         }
 

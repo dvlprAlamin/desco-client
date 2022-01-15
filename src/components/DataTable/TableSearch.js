@@ -17,7 +17,6 @@ const TableSearch = ({ openPopup, setOpenPopup, billModal, setBillModal }) => {
         // }
 
     }, [query])
-    console.log(searchedBills);
     return (
         <>
             <Paper variant='outlined' sx={{ p: 1, my: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
