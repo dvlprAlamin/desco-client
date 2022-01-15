@@ -13,6 +13,9 @@ import axios from 'axios';
 import Popup from './../Popup';
 import { useThisContext } from '../../context';
 import TableSearch from './TableSearch';
+import { useDispatch } from 'react-redux';
+import { deleteBill, fetchBills } from '../../redux/billsSlice';
+import { useSelector } from 'react-redux';
 
 
 const StyledTableRow = styled(TableRow)({
@@ -32,61 +35,46 @@ const HeadingCell = styled(TableCell)({
     fontWeight: 600
 });
 const DataTable = () => {
-    const { billPerPage, pageCount, setPageCount, billCount, setBillCount, openPopup, setOpenPopup, currentBills, setCurrentBills, setSearchedBills, searchedBills } = useThisContext();
+    const { openPopup, setOpenPopup } = useThisContext();
     const [billModal, setBillModal] = useState({
         open: false,
         data: null
     });
-    // const [loading, setLoading] = useState(false)
-    // const [openPopup, setOpenPopup] = useState(false)
-    // const [bills, setBills] = useState([]);
-    // const [currentBills, setCurrentBills] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
-    // const billPerPage = 10;
-    // const [pageCount, setPageCount] = useState(0);
-    // const [billCount, setBillCount] = useState(0)
     const handlePageChange = (event, value) => {
         setCurrentPage(value);
         // setPage(value)
     };
+    const dispatch = useDispatch();
+    const bills = useSelector(state => state.bills.bills)
+    const billPerPage = useSelector(state => state.bills.billPerPage)
+    const pageCount = useSelector(state => state.bills.pageCount)
+    const status = useSelector(state => state.bills.status)
+    const state = useSelector(state => state)
+
+    const fetchBillUri = `http://localhost:5000/api/billing-list?page=${currentPage - 1}&size=${billPerPage}`
     useEffect(() => {
-        const AuthString = `Bearer ${localStorage.getItem('token')}`
-        axios.get(`http://localhost:5000/api/billing-list?page=${currentPage - 1}&size=${billPerPage}`, { 'headers': { 'Authorization': AuthString } })
-            .then(res => {
-                setCurrentBills(res.data?.bills);
-                setSearchedBills(res.data?.bills);
-                setPageCount(Math.ceil(res.data?.count / billPerPage))
-                setBillCount(res.data?.count)
-            })
+        dispatch(fetchBills(fetchBillUri))
     }, [currentPage])
-    console.log(billCount);
+
+    useEffect(() => {
+        if (status === 'fulfilled') {
+            setOpenPopup({
+                status: true,
+                severity: 'success',
+                message: 'Bill deleted successfully'
+            })
+        } else if (status === 'rejected') {
+            setOpenPopup({
+                status: true,
+                severity: 'error',
+                message: state.error
+            })
+        }
+    }, [status])
+
     const billsDeleteHandler = id => {
-        let deletedBill = currentBills.find(bill => bill._id === id);
-        setSearchedBills(preValue => preValue.filter(bill => bill._id !== id))
-        setPageCount(Math.ceil((billCount - 1) / billPerPage))
-        // setLoading(true)
-        axios.delete(`https://stormy-cliffs-96809.herokuapp.com/api/delete-billing/${id}`)
-            .then(res => {
-                if (res.data) {
-                    // setCurrentBills(preValue => preValue.filter(bill => bill._id !== id))
-                    setOpenPopup({
-                        status: true,
-                        severity: 'success',
-                        message: 'Bill deleted successfully'
-                    })
-                }
-                // setLoading(false)
-            })
-            .catch(err => {
-                setOpenPopup({
-                    status: true,
-                    severity: 'error',
-                    message: err.message
-                })
-                setSearchedBills(preValue => [deletedBill, ...preValue]);
-                setPageCount(Math.ceil(billCount / billPerPage))
-                // setLoading(false)
-            })
+        dispatch(deleteBill(id, id))
     }
 
     const billsUpdateHandler = data => {
@@ -116,7 +104,7 @@ const DataTable = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {searchedBills?.map(({ _id, name, email, phone, amount }) => (
+                        {bills?.map(({ _id, name, email, phone, amount }) => (
                             <StyledTableRow key={_id}>
                                 <TableCell component="th" scope="row">
                                     {_id || 'Generating Id'}
