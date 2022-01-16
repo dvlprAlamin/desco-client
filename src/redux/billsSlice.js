@@ -9,6 +9,21 @@ export const fetchBills = createAsyncThunk(
         return response.data
     }
 )
+export const addBill = createAsyncThunk(
+    'bills/addBill',
+    async (data) => {
+        const response = await axios.post('http://localhost:5000/api/add-billing', data)
+        return response.data
+    }
+)
+export const updateBill = createAsyncThunk(
+    'bills/updateBill',
+    async (data) => {
+        const { _id, ...restData } = data;
+        const response = await axios.put(`http://localhost:5000/api/update-billing/${_id}`, restData)
+        return response.data
+    }
+)
 export const deleteBill = createAsyncThunk(
     'bills/deleteBill',
     async (id) => {
@@ -24,7 +39,7 @@ export const billsReducer = createSlice({
         count: 0,
         billPerPage: 10,
         pageCount: 1,
-        deleteOnHold: {},
+        billOnHold: {},
         status: 'idle',
         error: null
     },
@@ -41,21 +56,61 @@ export const billsReducer = createSlice({
             state.count = payload.count;
             state.pageCount = Math.ceil(payload.count / state.billPerPage);
         })
-        builder.addCase(deleteBill.pending, (state, { payload, meta }) => {
-            state.deleteOnHold = state.bills.bills.find(bill => bill._id === meta.arg)
-            state.bills = { ...state.bills, bills: state.bills.bills.filter(bill => bill._id !== meta.arg) };
-            state.pageCount = Math.ceil((state.bills.count - 1) / state.billPerPage);
+
+        // Add bill reducers
+        builder.addCase(addBill.pending, (state, { meta }) => {
+            console.log(meta);
+            state.bills.unshift(meta.arg);
+            state.pageCount = Math.ceil((state.count + 1) / state.billPerPage);
+            state.status = 'pending'
+        })
+        builder.addCase(addBill.fulfilled, (state, { payload }) => {
+            state.bills[0]._id = payload.insertedId;
+            state.status = 'fulfilled'
+        })
+        builder.addCase(addBill.rejected, (state, { error }) => {
+            state.bills.shift();
+            state.pageCount = Math.ceil((state.count - 1) / state.billPerPage);
+            state.status = 'rejected';
+            state.error = error.message;
+        })
+
+        // Update bill Reducers
+        builder.addCase(updateBill.pending, (state, { meta }) => {
+            state.billOnHold = state.bills.find(bill => bill._id === meta.arg._id);
+            const updatedBill = { ...state.billOnHold }
+            meta.arg.name && (updatedBill.name = meta.arg.name);
+            meta.arg.email && (updatedBill.email = meta.arg.email);
+            meta.arg.phone && (updatedBill.phone = meta.arg.phone);
+            meta.arg.amount && (updatedBill.name = meta.arg.name);
+            state.bills = [updatedBill, ...state.bills.filter(bill => bill._id !== meta.arg._id)];
+            state.status = 'pending'
+        })
+        builder.addCase(updateBill.fulfilled, (state, { payload, meta }) => {
+            state.status = 'fulfilled'
+            state.billOnHold = {};
+        })
+        builder.addCase(updateBill.rejected, (state, { meta }) => {
+            state.bills = [state.billOnHold, ...state.bills.filter(bill => bill._id !== meta.arg._id)];
+            state.status = 'rejected'
+            state.billOnHold = {};
+        })
+        //  Delete bill Reducers
+        builder.addCase(deleteBill.pending, (state, { meta }) => {
+            state.billOnHold = state.bills.find(bill => bill._id === meta.arg)
+            state.bills = state.bills.filter(bill => bill._id !== meta.arg);
+            state.pageCount = Math.ceil((state.count - 1) / state.billPerPage);
             state.status = 'pending'
         })
         builder.addCase(deleteBill.fulfilled, (state, { meta }) => {
-            state.deleteOnHold = {};
+            state.billOnHold = {};
             state.status = 'fulfilled'
         })
-        builder.addCase(deleteBill.rejected, (state, { meta, error }) => {
+        builder.addCase(deleteBill.rejected, (state, { error }) => {
             state.error = error.message;
-            state.bills.bills.unshift(state.deleteOnHold);
-            state.pageCount = Math.ceil((state.bills.count + 1) / state.billPerPage);
-            state.deleteOnHold = {};
+            state.bills.bills.unshift(state.billOnHold);
+            state.pageCount = Math.ceil((state.count + 1) / state.billPerPage);
+            state.billOnHold = {};
             state.status = 'rejected'
         })
     },

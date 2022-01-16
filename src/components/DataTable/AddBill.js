@@ -6,6 +6,8 @@ import Fade from '@mui/material/Fade';
 import { LinearProgress, Button, TextField } from '@mui/material';
 import axios from 'axios';
 import { useThisContext } from '../../context';
+import { useDispatch } from 'react-redux';
+import { addBill, updateBill } from '../../redux/billsSlice';
 
 const style = {
     position: 'absolute',
@@ -23,85 +25,28 @@ const style = {
 
 const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
     const [formData, setFormData] = useState({});
-    const { currentBills, billCount, setCurrentBills, setSearchedBills, setPageCount, billPerPage } = useThisContext()
     const [loading, setLoading] = useState(false)
-
+    const dispatch = useDispatch()
     const handleChange = e => {
         const newData = { ...formData };
         newData[e.target.name] = e.target.value;
         setFormData(newData);
     }
     const handleSubmit = e => {
-        setLoading(true)
         e.preventDefault();
-        console.log(formData);
-        let data = currentBills;
         if (billModal.data) {
-            setSearchedBills([{ ...formData, _id: billModal.data._id }, ...data.filter(bill => bill._id !== billModal.data._id)])
-            axios.put(`https://stormy-cliffs-96809.herokuapp.com/api/update-billing/${billModal.data._id}`, formData)
-                .then(res => {
-                    if (res.data) {
-                        setBillModal({
-                            open: false,
-                            data: null
-                        })
-                        setLoading(false);
-                        setOpenPopup({
-                            status: true,
-                            severity: 'success',
-                            message: 'Bill updated successfully'
-                        })
-                    }
-                })
-                .catch(err => {
-                    setOpenPopup({
-                        status: true,
-                        severity: 'error',
-                        message: err.response?.data || err.message
-                    })
-                    setBillModal({
-                        open: false,
-                        data: null
-                    })
-                    setLoading(false)
-                    setSearchedBills([...data])
-                })
-
+            const data = { ...formData, _id: billModal.data._id };
+            dispatch(updateBill(data, data))
+            setBillModal({
+                open: false,
+                data: null
+            })
         } else {
-            setSearchedBills([formData, ...data])
-            setPageCount(Math.ceil((billCount + 1) / billPerPage))
-            axios.post('http://localhost:5000/api/add-billing', formData)
-                .then(res => {
-                    console.log(res);
-                    if (res.data) {
-                        setBillModal({
-                            open: false,
-                            data: null
-                        })
-                        setLoading(false);
-                        console.log(res.data);
-                        setOpenPopup({
-                            status: true,
-                            severity: 'success',
-                            message: 'Bill added successfully'
-                        })
-                        setSearchedBills([{ ...formData, _id: res.data.insertedId }, ...data])
-                    }
-                })
-                .catch(err => {
-                    setOpenPopup({
-                        status: true,
-                        severity: 'error',
-                        message: err.response?.data || err.message
-                    })
-                    setBillModal({
-                        open: false,
-                        data: null
-                    })
-                    setLoading(false)
-                    setSearchedBills([...data])
-                    setPageCount(Math.ceil((billCount - 1) / billPerPage))
-                })
+            dispatch(addBill(formData, formData))
+            setBillModal({
+                open: false,
+                data: null
+            })
         }
 
     }
@@ -130,22 +75,24 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                             variant="outlined"
                             fullWidth
                             name="name"
+                            type={'text'}
                             label="Full Name"
                             margin="dense"
                             defaultValue={billModal.data ? billModal.data.name : ''}
                             onChange={handleChange}
-                        // required
+                            required
                         />
 
                         <TextField
                             variant="outlined"
                             fullWidth
+                            type={'email'}
                             name="email"
                             label="Email"
                             margin="dense"
                             defaultValue={billModal.data ? billModal.data.email : ''}
                             onChange={handleChange}
-                        // required
+                            required
                         />
                         <TextField
                             margin="dense"
@@ -153,19 +100,21 @@ const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
                             fullWidth
                             name="phone"
                             label="Phone"
+                            type={'number'}
                             defaultValue={billModal.data ? billModal.data.phone : ''}
                             onChange={handleChange}
-                        // required
+                            required
                         />
                         <TextField
                             margin="dense"
                             variant="outlined"
                             fullWidth
+                            type={'number'}
                             name="amount"
                             label="Paid Amount"
                             defaultValue={billModal.data ? billModal.data.amount : ''}
                             onChange={handleChange}
-                        // required
+                            required
                         />
 
                         <Button variant="contained" type="submit" style={{ marginTop: 10 }}>Save</Button>
