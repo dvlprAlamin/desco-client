@@ -4,14 +4,15 @@ import loginImg from './../img/login.jpg';
 import { useHistory, useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { useThisContext } from '../context';
-import Popup from '../components/Popup';
+import { useDispatch } from 'react-redux';
+import { setUser } from '../redux/userSlice';
+import { addAlert } from '../redux/alertSlice';
 const LoginSignup = () => {
-    const { setUserUserEmail, openPopup, setOpenPopup } = useThisContext();
     const history = useHistory();
     const { pathname } = useLocation();
     const [loading, setLoading] = useState(false)
     const [loginInfo, setLoginInfo] = useState({})
+    const dispatch = useDispatch()
     const handleChange = e => {
         const newLoginInfo = { ...loginInfo };
         newLoginInfo[e.target.name] = e.target.value;
@@ -23,22 +24,20 @@ const LoginSignup = () => {
         axios.post('https://stormy-cliffs-96809.herokuapp.com/api/registration', loginInfo)
             .then(res => {
                 if (res.data?.acknowledged) {
-                    setOpenPopup({
-                        status: true,
+                    dispatch(addAlert({
                         severity: 'success',
-                        message: 'Account created successfully'
-                    });
+                        message: 'Account Created Successfully',
+                    }))
                     e.target.reset();
                     history.push('/login')
                 };
                 setLoading(false)
             }).catch(err => {
                 setLoading(false);
-                setOpenPopup({
-                    status: true,
+                dispatch(addAlert({
                     severity: 'error',
-                    message: err.response?.data?.message || err.message
-                });
+                    message: err.response?.data?.message || err.message,
+                }))
             })
     }
     const loginHandler = e => {
@@ -48,27 +47,25 @@ const LoginSignup = () => {
             .then(res => {
                 if (res.data?.status) {
                     localStorage.setItem('token', res.data?.token);
-                    setUserUserEmail(res.data?.email)
+                    dispatch(setUser(res.data?.email));
+                    dispatch(addAlert({
+                        severity: 'success',
+                        message: 'Login Successful',
+                    }))
                     history.push('/')
                 };
                 setLoading(false)
             }).catch(err => {
                 setLoading(false);
-                setOpenPopup({
-                    status: true,
+                dispatch(addAlert({
                     severity: 'error',
-                    message: err.response?.data?.message || err.message
-                });
-                console.log(err.response);
+                    message: err.response?.data?.message || err.message,
+                }))
             })
     }
     return (
         <>
             <Container>
-                <Popup
-                    openPopup={openPopup}
-                    setOpenPopup={setOpenPopup}
-                />
                 <Typography variant="h2" sx={{ mt: 3, textAlign: 'center', color: '#4f51fe' }}> Welcome to Desco</Typography>
                 <Grid container spacing={4}>
                     <Grid item sm={12} md={6} lg={6} style={{ minHeight: 600, display: 'flex', alignItems: 'center' }}>

@@ -18,18 +18,7 @@ export const ContextProvider = ({ children }) => {
     const billPerPage = 10;
     const [pageCount, setPageCount] = useState(0);
     const [billCount, setBillCount] = useState(0)
-    // const billPerPage = 10;
-    // const [pageCount, setPageCount] = useState(null)
-    // useEffect(() => {
-    //     const AuthString = `Bearer ${localStorage.getItem('token')}`
-    //     axios.get('https://stormy-cliffs-96809.herokuapp.com/api/billing-list', { 'headers': { 'Authorization': AuthString } })
-    //         .then(res => {
-    //             setBills(res.data)
-    //         })
-    // }, [])
-    // useEffect(() => {
-    //     setPageCount(Math.ceil(bills.length / billPerPage))
-    // }, [bills])
+
     const value = {
         currentBills,
         setCurrentBills,

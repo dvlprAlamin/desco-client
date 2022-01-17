@@ -7,11 +7,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { Paper, ButtonGroup, Button, Pagination } from '@mui/material';
 import { styled } from '@mui/styles';
-import AddBill from './AddBill';
 import { useEffect } from 'react';
-import axios from 'axios';
-import Popup from './../Popup';
-import { useThisContext } from '../../context';
 import TableSearch from './TableSearch';
 import { useDispatch } from 'react-redux';
 import { deleteBill, fetchBills } from '../../redux/billsSlice';
@@ -35,7 +31,6 @@ const HeadingCell = styled(TableCell)({
     fontWeight: 600
 });
 const DataTable = () => {
-    const { openPopup, setOpenPopup } = useThisContext();
     const [billModal, setBillModal] = useState({
         open: false,
         data: null
@@ -49,29 +44,10 @@ const DataTable = () => {
     const bills = useSelector(state => state.bills.bills)
     const billPerPage = useSelector(state => state.bills.billPerPage)
     const pageCount = useSelector(state => state.bills.pageCount)
-    const status = useSelector(state => state.bills.status)
-    const state = useSelector(state => state)
-
     const fetchBillUri = `http://localhost:5000/api/billing-list?page=${currentPage - 1}&size=${billPerPage}`
     useEffect(() => {
         dispatch(fetchBills(fetchBillUri))
     }, [currentPage])
-
-    useEffect(() => {
-        if (status === 'fulfilled') {
-            setOpenPopup({
-                status: true,
-                severity: 'success',
-                message: 'Bill deleted successfully'
-            })
-        } else if (status === 'rejected') {
-            setOpenPopup({
-                status: true,
-                severity: 'error',
-                message: state.error
-            })
-        }
-    }, [status])
 
     const billsDeleteHandler = id => {
         dispatch(deleteBill(id, id))
@@ -88,8 +64,6 @@ const DataTable = () => {
             <TableSearch
                 setBillModal={setBillModal}
                 billModal={billModal}
-                setOpenPopup={setOpenPopup}
-                openPopup={openPopup}
             />
             <TableContainer component={Paper} variant='outlined'>
                 <Table sx={{ minWidth: 700 }} aria-label="customized table">
@@ -105,7 +79,7 @@ const DataTable = () => {
                     </TableHead>
                     <TableBody>
                         {bills?.map(({ _id, name, email, phone, amount }) => (
-                            <StyledTableRow key={_id}>
+                            <StyledTableRow key={_id || email}>
                                 <TableCell component="th" scope="row">
                                     {_id || 'Generating Id'}
                                 </TableCell>

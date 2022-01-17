@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Backdrop from '@mui/material/Backdrop';
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
 import { LinearProgress, Button, TextField } from '@mui/material';
-import axios from 'axios';
-import { useThisContext } from '../../context';
 import { useDispatch } from 'react-redux';
 import { addBill, updateBill } from '../../redux/billsSlice';
+import { useSelector } from 'react-redux';
 
 const style = {
     position: 'absolute',
@@ -23,9 +22,10 @@ const style = {
     padding: 4,
 };
 
-const AddBill = ({ billModal, setBillModal, setOpenPopup }) => {
+const AddBill = ({ billModal, setBillModal }) => {
     const [formData, setFormData] = useState({});
     const [loading, setLoading] = useState(false)
+    // const status = useSelector(state=> state.bills.status.add)
     const dispatch = useDispatch()
     const handleChange = e => {
         const newData = { ...formData };

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import CustomAlert from './components/CustomAlert';
 import PrivateRoute from './components/PrivateRoute';
 import { ContextProvider } from './context';
 import Home from './pages/Home';
@@ -9,6 +10,7 @@ const App = () => {
   return (
     <ContextProvider>
       <BrowserRouter>
+        <CustomAlert />
         <Switch>
           <PrivateRoute exact path={'/'}>
             <Home />

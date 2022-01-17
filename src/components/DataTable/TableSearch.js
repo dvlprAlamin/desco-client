@@ -1,22 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useThisContext } from '../../context';
-import { Container, Paper, Box, Typography, TextField, Button } from '@mui/material'
+import { Paper, Box, Typography, TextField, Button } from '@mui/material'
 import AddBill from './AddBill';
-import Popup from '../Popup';
-const TableSearch = ({ openPopup, setOpenPopup, billModal, setBillModal }) => {
-    const { currentBills, setCurrentBills, searchedBills, setSearchedBills } = useThisContext()
+const TableSearch = ({ billModal, setBillModal }) => {
     const [query, setQuery] = useState('');
 
 
-    useEffect(() => {
-        // if (query) {
-        setSearchedBills(currentBills.filter(bill =>
-            bill.name?.toLowerCase().indexOf(query.toLowerCase()) > -1 ||
-            bill.email?.toLowerCase().indexOf(query.toLowerCase()) > -1 ||
-            bill.phone?.toLowerCase().indexOf(query.toLowerCase()) > -1));
-        // }
+    // useEffect(() => {
 
-    }, [query])
+
+    // }, [query])
     return (
         <>
             <Paper variant='outlined' sx={{ p: 1, my: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -37,15 +29,10 @@ const TableSearch = ({ openPopup, setOpenPopup, billModal, setBillModal }) => {
                     })}
                 >Add New Bill</Button>
                 <AddBill
-                    setOpenPopup={setOpenPopup}
                     billModal={billModal}
                     setBillModal={setBillModal}
                 />
             </Paper>
-            <Popup
-                openPopup={openPopup}
-                setOpenPopup={setOpenPopup}
-            />
         </>
     );
 };

@@ -27,7 +27,6 @@ const Navigation = () => {
                             </Typography>
                         </Box>
                     </Container>
-
                 </Toolbar>
             </AppBar>
         </Box>

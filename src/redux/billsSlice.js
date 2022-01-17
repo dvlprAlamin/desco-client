@@ -14,7 +14,6 @@ export const fetchTotalBills = createAsyncThunk(
     async () => {
         const headers = { 'headers': { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
         const response = await axios.get('http://localhost:5000/api/billing-list', headers)
-        console.log(response.data);
         return response.data
     }
 )
@@ -37,7 +36,6 @@ export const deleteBill = createAsyncThunk(
     'bills/deleteBill',
     async (id) => {
         const response = await axios.delete(`http://localhost:5000/api/delete-billing/${id}`)
-        console.log(response.data);
         return response.data
     }
 )
@@ -50,14 +48,14 @@ export const billsReducer = createSlice({
         billPerPage: 10,
         pageCount: 1,
         billOnHold: {},
-        status: 'idle',
+        status: {
+            add: 'idle',
+            delete: 'idle',
+            update: 'idle'
+        },
         error: null
     },
-    reducers: {
-        increment: (state) => {
-            state.value += 1
-        }
-    },
+    reducers: {},
     extraReducers: (builder) => {
         // fetch bills
         builder.addCase(fetchBills.fulfilled, (state, { payload }) => {
@@ -68,13 +66,11 @@ export const billsReducer = createSlice({
 
         //fetch all bills 
         builder.addCase(fetchTotalBills.fulfilled, (state, { payload }) => {
-            // console.log(payload);
             state.paidTotal = +payload.bills?.reduce((preValue, currValue) => preValue + +currValue.amount, 0).toFixed(2);
         })
 
         // Add bill reducers
         builder.addCase(addBill.pending, (state, { meta }) => {
-            console.log(meta);
             state.bills.unshift(meta.arg);
             state.pageCount = Math.ceil((state.count + 1) / state.billPerPage);
             state.status = 'pending';
@@ -82,7 +78,7 @@ export const billsReducer = createSlice({
         })
         builder.addCase(addBill.fulfilled, (state, { payload }) => {
             state.bills[0]._id = payload.insertedId;
-            state.status = 'fulfilled'
+            state.status = 'fulfilled';
         })
         builder.addCase(addBill.rejected, (state, { error, meta }) => {
             state.bills.shift();
@@ -90,6 +86,7 @@ export const billsReducer = createSlice({
             state.status = 'rejected';
             state.error = error.message;
             state.paidTotal -= +meta.arg.amount;
+
         })
 
         // Update bill Reducers
@@ -138,6 +135,6 @@ export const billsReducer = createSlice({
 })
 
 // Action creators are generated for each case reducer function
-export const { increment } = billsReducer.actions
+
 
 export default billsReducer.reducer
