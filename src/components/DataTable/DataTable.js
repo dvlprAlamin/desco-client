@@ -5,7 +5,7 @@ import TableCell from '@mui/material/TableCell';
 import { TableContainer, Container } from '@mui/material';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { Paper, ButtonGroup, Button, Pagination } from '@mui/material';
+import { Paper, ButtonGroup, Button, Pagination, Skeleton } from '@mui/material';
 import { styled } from '@mui/styles';
 import { useEffect } from 'react';
 import TableSearch from './TableSearch';
@@ -44,7 +44,7 @@ const DataTable = () => {
     const bills = useSelector(state => state.bills.bills)
     const billPerPage = useSelector(state => state.bills.billPerPage)
     const pageCount = useSelector(state => state.bills.pageCount)
-    const fetchBillUri = `http://localhost:5000/api/billing-list?page=${currentPage - 1}&size=${billPerPage}`
+    const fetchBillUri = `https://stormy-cliffs-96809.herokuapp.com/api/billing-list?page=${currentPage - 1}&size=${billPerPage}`
     useEffect(() => {
         dispatch(fetchBills(fetchBillUri))
     }, [currentPage])
@@ -78,7 +78,7 @@ const DataTable = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {bills?.map(({ _id, name, email, phone, amount }) => (
+                        {bills.length > 0 ? bills.map(({ _id, name, email, phone, amount }) => (
                             <StyledTableRow key={_id || email}>
                                 <TableCell component="th" scope="row">
                                     {_id || 'Generating Id'}
@@ -100,8 +100,19 @@ const DataTable = () => {
                                         >Delete</Button>
                                     </ButtonGroup>
                                 </TableCell>
-                            </StyledTableRow>
-                        ))}
+                            </StyledTableRow>)) :
+                            [...Array.from(new Array(10))].map((item, i) => (
+                                <StyledTableRow key={i}>
+                                    <TableCell><Skeleton animation="wave" /></TableCell>
+                                    <TableCell><Skeleton animation="wave" /></TableCell>
+                                    <TableCell><Skeleton animation="wave" /></TableCell>
+                                    <TableCell><Skeleton animation="wave" /></TableCell>
+                                    <TableCell><Skeleton animation="wave" /></TableCell>
+                                    <TableCell><Skeleton animation="wave" /></TableCell>
+                                </StyledTableRow>
+                            ))
+
+                        }
                     </TableBody>
                 </Table>
             </TableContainer>

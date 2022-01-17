@@ -13,14 +13,14 @@ export const fetchTotalBills = createAsyncThunk(
     'bills/fetchTotalBills',
     async () => {
         const headers = { 'headers': { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }
-        const response = await axios.get('http://localhost:5000/api/billing-list', headers)
+        const response = await axios.get('https://stormy-cliffs-96809.herokuapp.com/api/billing-list', headers)
         return response.data
     }
 )
 export const addBill = createAsyncThunk(
     'bills/addBill',
     async (data) => {
-        const response = await axios.post('http://localhost:5000/api/add-billing', data)
+        const response = await axios.post('https://stormy-cliffs-96809.herokuapp.com/api/add-billing', data)
         return response.data
     }
 )
@@ -28,14 +28,14 @@ export const updateBill = createAsyncThunk(
     'bills/updateBill',
     async (data) => {
         const { _id, ...restData } = data;
-        const response = await axios.put(`http://localhost:5000/api/update-billing/${_id}`, restData)
+        const response = await axios.put(`https://stormy-cliffs-96809.herokuapp.com/api/update-billing/${_id}`, restData)
         return response.data
     }
 )
 export const deleteBill = createAsyncThunk(
     'bills/deleteBill',
     async (id) => {
-        const response = await axios.delete(`http://localhost:5000/api/delete-billing/${id}`)
+        const response = await axios.delete(`https://stormy-cliffs-96809.herokuapp.com/api/delete-billing/${id}`)
         return response.data
     }
 )
